@@ -10,8 +10,8 @@ using namespace std;
 typedef long long LL;
 
 int main() {
-    vector<LL> c(100001), bestWith(100001), bestWithout(100001);
-    int n, a;
+    vector<int> c(100001);
+    LL n, a, with = 0, without = 0;
 
 	cin >> n;
     REP(n) {
@@ -20,11 +20,11 @@ int main() {
     }
 
     FORE(i,1,100000) {
-        bestWith[i] = bestWithout[i-1] + i * c[i];
-        bestWithout[i] = max(bestWith[i-1], bestWithout[i-1]);
+        LL w = without + (LL)i * c[i], wo = max(with, without);
+        with = w, without = wo;
     }
 
-    cout << max(bestWith[100000], bestWithout[100000]) << endl;
+    cout << max(with, without) << endl;
 
     return 0;
 }

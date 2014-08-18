@@ -9,13 +9,40 @@ using namespace std;
 
 typedef long long LL;
 
-int n, k, prime[1000], primes, f[12], p[12];
+LL modpow(LL a, LL k, LL p) { // a^k % p
+    LL ret = 1;
+    while(k) {
+        if(k % 2) ret = (ret * a) % p;
+        k /= 2;
+        a = (a * a) % p;
+    }
+    return ret;
+}
+
+LL modinv(LL a, LL p) { return modpow(a, p-2, p); }
+
+LL modP(LL n, LL k, LL p) { // ways to choose k from p
+    LL res = 1;
+    for(LL i = n; i > n-k; --i) res = (res * i) % p;
+    return res;
+}
+
+// The combination calculation is adapted, simplified, and precalculated from:
+// http://stackoverflow.com/questions/10118137/fast-n-choose-k-mod-p-for-large-n
+LL modC(LL n, LL k, LL p) {
+    if(k > n) return 0;
+    if(k == n || k == 0) return 1;
+    return (modP(n, k, p) * modinv(modP(k, k, p), p)) % p;
+}
+
+#define P 1000000007
+
+int n, k, ways = 0, prime[1000], primes, f[12], p[12];
 
 void recurseFactors(int i, int prod, int from) {
-	// print current
-	cout << "1";
-	FOR(j,0,i) cout << " * " << f[j] << "^" << p[j];
-	cout << " = " << prod << endl;
+    LL wadd = 1;
+    FOR(j,0,i) wadd = (modC(k-1 + p[j], k-1, P) * wadd) % P;
+    ways = (ways + wadd) % P;
 
 	FOR(j,from,primes) {
 		f[i] = prime[j], p[i] = 1;
@@ -27,15 +54,15 @@ void recurseFactors(int i, int prod, int from) {
 int main() {
     cin >> n >> k;
 
-	FOR(i,2,n) {
+	FORE(i,2,n) {
 		bool isPrime = true;
 		for(int j=2; j*j <= i; ++j) if(i%j == 0) isPrime = false;
 		if(isPrime) prime[primes++] = i;
 	}
 
-	FOR(i,0,primes) cout << prime[i] << endl;
-
 	recurseFactors(0, 1, 0);
+
+    cout << ways << endl;
 
 	return 0;
 }

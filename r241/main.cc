@@ -9,41 +9,32 @@ using namespace std;
 #define REP(n) for(int _i=0; _i<n; ++_i)
 #define FOR(i,a,b) for(int i=a; i<b; ++i)
 
+int n, a[200000], num = 0;
+
+int ari(int pos) { // find arithmetic progression from pos and return end+1
+    int i, ival, j, jval, k, kval, add;
+
+    for(i=pos; i<n && a[i] == -1; ++i) {}
+    if(i == n) return n;
+    ival = a[i];
+
+    for(j=i+1; j<n && a[j] == -1; ++j) {}
+    if(j == n) return n;
+    jval = a[j];
+
+    cout << "a[" << i << "] = " << ival << " and a[" << j << "] = " << jval << endl;
+
+    return j+1;
+}
+
 int main() {
-    vector< tuple<int,int,int> > groups;
-    vector< pair<int,int> > ans;
-    map< int,vector<int> > tables;
-    int n, c, p, k, r, m = 0, s = 0;
-
     cin >> n;
-    FOR(i,0,n) {
-        cin >> c >> p;
-        groups.push_back(make_tuple(p,c,i));
-    }
-    sort(groups.rbegin(), groups.rend());
+    FOR(i,0,n) cin >> a[i];
 
-    cin >> k;
-    FOR(i,0,k) {
-        cin >> r;
-        tables[r].push_back(i);
-    }
+    for(int pos=0; pos<n; num++)
+        pos = ari(pos);
 
-    for(auto t : groups) {
-        auto table = tables.upper_bound(get<1>(t)-1);
-
-        if(table == tables.end()) continue; // no room
-
-        int tabnum = table->second.back(); table->second.pop_back();
-
-        if(table->second.empty()) tables.erase(table);
-
-        ans.push_back(make_pair(get<2>(t)+1, tabnum+1));
-
-        s += get<0>(t), m++;
-    }
-
-    cout << m << " " << s << endl;
-    for(auto pa : ans) cout << pa.first << " " << pa.second << endl;
+    cout << num << endl;
 
     return 0;
 }

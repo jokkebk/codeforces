@@ -12,7 +12,7 @@ run: $(EXE)
 clean:
 	$(RM) *.o *~ $(EXE)
 
-$(EXE): main.o
+%.exe: %.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
 
 %.o: %.cc

@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS=-Wall -O3 -std=c++11
 # -Wall -O3
-LIBS=-lstdc++
+LIBS=-lstdc++ -lm
 EXE = main.exe
 
 all: $(EXE)
@@ -12,7 +12,7 @@ run: $(EXE)
 clean:
 	$(RM) *.o *~ $(EXE)
 
-$(EXE): main.o
+%.exe: %.o
 	$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
 
 %.o: %.cc

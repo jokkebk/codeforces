@@ -3,7 +3,15 @@
 
 using namespace std;
 
+#define REP(n) for(__typeof(n) _i=0; _i<n; ++_i)
+#define FOR(i,a,b) for(__typeof(b) i=a; i<b; ++i)
+#define FORE(i,a,b) for(__typeof(b) i=a; i<=b; ++i)
+#define S(x) scanf("%d", &(x))
+
+typedef long long LL;
+
 int sais(const char *T, int *SA, int n);
+int sais_int(const int *T, int *SA, int n, int k);
 
 // Linear-Time Longest-Common-Prefix Computation in Suffix Arrays and Its
 // Applications from http://www.cs.iastate.edu/~cs548/references/linear_lcp.pdf
@@ -26,21 +34,31 @@ void getLCP(const T *s, const int *pos, int *lcp, int n) {
 }
 
 int main() {
-    char s[256];
-    int sa[256], lcp[256];
-    int len;
+    int s[5001], sa[5001], lcp[5001], n, k;
 
-    cin >> s;
+    cin >> n >> k;
 
-    len = strlen(s);
+    FOR(i,0,n*k) cin >> s[i];
 
-    sais(s, sa, len);
-    getLCP(s, sa, lcp, len);
+    sais_int(s, sa, n*k, 1001);
+    getLCP(s, sa, lcp, n*k);
 
-    cout << "---" << endl;
+	int cur = 0, num = 0, len = 0, best = 1;
 
-    for(int i=0; i<len; i++)
-        cout << lcp[i] << ": " << s+sa[i] << endl;
+    FOR(i,0,n*k) {
+        int idx = sa[i] / n, pos = sa[i] % n;
+		if(cur != s[sa[i]]) {
+			cur = s[sa[i]];
+			num = 1, len = n;
+		} else {
+			num += 1, len = min(len, min(lcp[i], n - pos));
+			if(num == k && best < len) best = len;
+		}
+        //FOR(j,sa[i],n) cout << s[j] << " ";
+        //cout << " (" << lcp[i] << ")" << endl;
+    }
+
+	cout << best;
 
     return 0;
 }

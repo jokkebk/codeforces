@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -O3 -std=c++11
+CFLAGS=-O3 -std=c++11
 # -Wall -O3
 LIBS=-lstdc++
 EXE = main.exe

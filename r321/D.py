@@ -16,10 +16,9 @@ for bits in range(1,m+1):
     for ma in masks[bits]:
         for j in range(n):
             if ma & (1<<j): continue # not a new bit
-            for b in range(n):
-                if not (ma & (1<<b)): continue # not part of mask
-                dp[j][ma] = max(dp[j][ma], dp[b][ma-(1<<b)] +
-                        dp[j][0] + sat.setdefault((b,j), 0))
+            dp[j][ma] = max(dp[b][ma-(1<<b)] +
+                        dp[j][0] + sat.setdefault((b,j), 0) \
+                                for b in range(n) if (ma&(1<<b)))
 
 best = 0
 for ma in masks[m]:

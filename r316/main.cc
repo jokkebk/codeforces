@@ -16,107 +16,61 @@ typedef long long LL;
 #define MAX(a,b) ((a)<(b) ? (b) : (a))
 #define MIN(a,b) ((a)>(b) ? (b) : (a))
 
-char s[500010];
+char s[500005];
 
-vector<vector<int>> C;
-vector<int> height, line, top, before;
-priority_queue<tuple<int,int,int>> hsorted;
-
-void rec(int v, int indent) {
-    static char ind[21] = "                    ";
-    cout << &ind[20-indent*2] << s[v] << " (" << v << ") at h=" << height[v] << endl;
-    if(line[v]) {
-        cout << &ind[20-indent*2] << "..";
-        FOR(i,0,line[v]) cout << C[v][i] << ".."; cout << endl;
-        rec(C[v][line[v]], indent+1); // extract last item in line
-    } else for(int c : C[v]) {
-        rec(c, indent+1);
-    }
-}
-
-int find(int v, int h, bool right) {
-    //cout << "Going down from " << v << " to " << h << " levels" << endl;
-    if(!h) return v;
-
-    int t = top[v], l = line[t];
-
-    if(l) {
-        int pos = height[v] - height[t] - 1;
-        //cout << "Supposedly we're at " << pos << "/" << line[t] << " from " << t << endl;
-        if(pos+h <= l)
-            return C[t][pos+h];
-        else
-            return find(C[t][l], h - (l-pos), right);
-    } else {
-        if(C[v].empty()) return 0;
-        return find(right ? C[v].back() : C[v][0], h-1, right);
-    }
-}
+vector<int> p, h, ccnt, start;
+vector<map<int,int>> mask;
 
 int main() {
-    int n, m, v, h;
+    int n, m, hmax=0;
 
     S(n); S(m);
-    C.resize(n);
-    height.resize(n);
-    before.resize(n);
-    line.resize(n);
-    top.resize(n);
+    p.resize(n);
+    h.resize(n);
+    ccnt.resize(n);
+    start.resize(n);
 
     FOR(i,1,n) {
-        S(v), v--;
-        C[v].push_back(i);
-        height[i] = height[v]+1;
-        hsorted.push(make_tuple(height[i], v, i));
-        top[i] = v;
+        S(p[i]); p[i]--;
+        h[i] = h[p[i]] + 1;
+        hmax = MAX(hmax, h[i]);
     }
 
     REP(2) fgets(s, sizeof(s)-2, stdin);
 
-    // Flatten parts of trees with single child
+    mask.resize(hmax+1); // simplify indexing
+
+    // Count children
+    for(int i=n-1; i; i--) ccnt[p[i]] += ccnt[i] + 1;
+
+    // Renumber nodes so subtree starts from start[v] plus ccnt[v] children
+    start[0] = ccnt[0]; // Enough for all children
+    FOR(i,1,n) {
+        start[i] = start[p[i]]; // Begin range from here
+        mask[h[i]][start[i]] = 1 << (s[i]-'a'); // stays within range
+        start[p[i]] -= ccnt[i] + 1; // Reserve numbers for this and children
+    }
+
     FOR(i,0,n) {
-        if(C[i].size() == 1 && !line[top[i]]) {
-            int c = C[i][0], cn;
-            while(C[c].size() == 1) {
-                cn = C[c][0];
-                //cout << "Merge " << cn << " to " << i << endl;
-                C[i].push_back(cn);
-                line[i]++;
-                top[cn] = i;
-                c = cn;
-            }
+        cout << "Node " << i+1 << ": " << start[i] << " .. " << start[i]+ccnt[i] << endl;
+    }
+
+    FORE(i,1,hmax) {
+        int last = 0;
+        cout << "Height " << i << endl;
+        for(auto it : mask[i]) {
+            it.second ^= last;
+            cout << "  " << it.first << " = " << it.second << endl;
+            last = it.second;
         }
     }
 
-    //rec(0, 0);
-
-    int curh=0, sofar=0;
-    while(hsorted.size()) {
-        tuple<int,int,int> t = hsorted.top(); hsorted.pop();
-        h = get<0>(t);
-        v = get<2>(t);
-        if(h != curh) {
-            sofar=0;
-            curh=h;
-        }
-        before[v] = sofar;
-        sofar ^= 1 << (s[v] - 'a');
-        //cout << "Height " << get<0>(t) << " vertex " << v << " before " << before[v] << endl;
-    }
+    return 0;
 
     REP(m) {
-        S(v); v--;
-        S(h); h--;
-        int hd = h-height[v];
-
-        if(hd <= 0) cout << "Yes" << endl;
-        else {
-            int left = find(v, hd, false),
-                right = find(v, hd, true),
-                mask = before[left] ^ before[right] ^ (1<<(s[left] - 'a'));
-            //cout << hd << " levels from " << v << " got " << left << ".." << right << " = " << before[left] << " ^ " << before[right] << " ^ " << (1<<(s[left] - 'a')) << " = " << mask << endl;
-            cout << ((mask && (mask&(mask-1))) ? "No" : "Yes") << endl;
-        }
+        int v1, h1;
+        S(v1); v1--;
+        S(h1); h1--;
     }
 
     return 0;

@@ -24,22 +24,15 @@ char s[500005];
 vector<int> p, height, ccnt, start;
 vector<map<int,int>> mask;
 
-bool pali(int v, int h, map<int,int> & m) {
+inline bool pali(int v, int h, map<int,int> & m) {
     int from=start[v], to=from+ccnt[v];
     int res = m.lower_bound(from)->second ^ m.upper_bound(to)->second;
     return !(res && (res&(res-1)));
 }
 
-void ptree(int v) {
-    static char ind[21] = "                    ";
-    int n = p.size();
-    vector<vector<int>> C(n);
-    FOR(i,1,n) C[p[i]].push_back(i);
-    cout << &ind[20-height[v]*2];
-    cout << v+1 << "/" << start[v] << " (h=" << height[v]+1 << "): " << s[v] << " (" << (1<<(s[v]-'a')) << ")" << endl;
-    for(int c : C[v]) ptree(c);
-}
-
+// Faster way to solve would be DFS to number the node, and we can
+// push depth-specific node numbers into sorted arrays along the way,
+// eliminating the need to use a map or sort for mask[h]
 int main() {
     int n, m, v, h, hmax=0;
 
@@ -78,13 +71,6 @@ int main() {
             last = it->second;
         }
         mask[i][999999] = 0;
-    }
-
-    ptree(0);
-    for(h=1; h<=hmax; h++) {
-        cout << "h = " << h << ": ";
-        for(auto p : mask[h]) cout << p.first << "=" << p.second << " ";
-        cout << endl;
     }
 
     FOR(i,0,m) {

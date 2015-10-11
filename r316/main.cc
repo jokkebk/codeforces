@@ -18,22 +18,50 @@ typedef long long LL;
 
 char s[500005];
 
-vector<int> p, h, ccnt, start;
+vector<int> p, height, ccnt, start;
 vector<map<int,int>> mask;
 
+bool pali(int h, int from, int to, bool debug) {
+    auto begin = mask[h].lower_bound(from), end = mask[h].lower_bound(to);
+
+    if(debug) cout << h << ": From " << from << " to " << to << endl;
+
+    if(begin == mask[h].end()) {
+        if(debug) cout << "Beyond this range!" << endl;
+        return true;
+    } else {
+        if(debug) cout << (begin==mask[h].end()) << " and " << end->first << " = " << end->second << endl;
+        if(debug) cout << "btw. " << (end==mask[h].end()) << endl;
+        int before = (begin == mask[h].begin() ? 0 : (--begin)->second), after;
+        if(debug) cout << "Before this is " << before << endl;
+        if(end == mask[h].end()) {
+            if(debug) cout << "Range contains last element which is " << mask[h].rbegin()->second << endl;
+            after = mask[h].rbegin()->second;
+        } else if(end->first > to) {
+            if(debug) cout << "Outside this range!" << endl;
+            return true;
+        } else {
+            after = end->second;
+        }
+        if(debug) cout << "At the end is " << after << endl;
+        int within = before ^ after;
+        return !(within && (within&(within-1)));
+    }
+}
+
 int main() {
-    int n, m, hmax=0;
+    int n, m, v, h, hmax=0;
 
     S(n); S(m);
     p.resize(n);
-    h.resize(n);
+    height.resize(n);
     ccnt.resize(n);
     start.resize(n);
 
     FOR(i,1,n) {
         S(p[i]); p[i]--;
-        h[i] = h[p[i]] + 1;
-        hmax = MAX(hmax, h[i]);
+        height[i] = height[p[i]] + 1;
+        hmax = MAX(hmax, height[i]);
     }
 
     REP(2) fgets(s, sizeof(s)-2, stdin);
@@ -47,30 +75,35 @@ int main() {
     start[0] = ccnt[0]; // Enough for all children
     FOR(i,1,n) {
         start[i] = start[p[i]]; // Begin range from here
-        mask[h[i]][start[i]] = 1 << (s[i]-'a'); // stays within range
+        //cout << "Store " << s[i] << " (" << (1<<(s[i]-'a')) << ") at " << height[i] << " / " << start[i] << endl;
+        mask[height[i]][start[i]] = 1 << (s[i]-'a'); // stays within range
         start[p[i]] -= ccnt[i] + 1; // Reserve numbers for this and children
     }
 
-    FOR(i,0,n) {
-        cout << "Node " << i+1 << ": " << start[i] << " .. " << start[i]+ccnt[i] << endl;
-    }
+    //FOR(i,0,n) cout << "Node " << i+1 << ": " << start[i] << " .. " << start[i]+ccnt[i] << endl;
 
     FORE(i,1,hmax) {
         int last = 0;
-        cout << "Height " << i << endl;
-        for(auto it : mask[i]) {
+        //cout << "Height " << i << endl;
+        for(auto& it : mask[i]) {
             it.second ^= last;
-            cout << "  " << it.first << " = " << it.second << endl;
+            //cout << "  " << it.first << " = " << it.second << endl;
             last = it.second;
         }
     }
 
-    return 0;
+    FOR(i,0,m) {
+        S(v); v--;
+        S(h); h--;
 
-    REP(m) {
-        int v1, h1;
-        S(v1); v1--;
-        S(h1); h1--;
+        //if(n == 500000 && m == 500000 && i == 13)
+            //cout << "Tree of height " << hmax << " asking for " << v << " " << h << " subtree at height " << height[v] << endl;
+
+        if(h <= height[v] || h > hmax)
+            cout << "Yes" << endl;
+        else
+            cout << (pali(h, start[v], start[v]+ccnt[v], false && (n == 500000 && m == 500000 && i == 13)) ? "Yes":"No") << endl;
+
     }
 
     return 0;

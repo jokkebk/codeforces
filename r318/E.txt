@@ -1,0 +1,1 @@
+Alahaaraan voi piirt‰‰ yhteen suuntaan vain jos haarautuvia alihaaroja on max. yksi. Koska yhdest‰ nodesta puussa voi l‰hte‰ kahteen suuntaan, niin puussa voi olla yksi haara jonka kaksi alihaaraa voi haarautua.

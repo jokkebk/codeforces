@@ -22,38 +22,51 @@ typedef long long LL;
 
 #define Inf 1000000007
 
-bool prime(int n) {
-    if(n<2) return false;
-    for(int i=2; i*i<=n; i++) if(n%i == 0) return false;
-    return true;
-}
+int a[2][2000001], ans=0;
 
-// All numbers below 3325581707333960528 can be represented as sum of
-// two primes, smaller of which is below 10 000
-// Largest range of non-primes below 10^9 is 281 numbers
+//  4 2 1 3  = +2  0 +1 -3
+//  4 2 3 1  = +2  0 -2  0
+//  3 2 4 1  +  0  0  0  0
 int main() {
-    ios_base::sync_with_stdio(false);
-    cin.tie(NULL);
+    int n, t, sum=0;
 
-    int n, i;
+    S(n);
 
-    cin >> n;
+    vector<int> pos(n), target(n);
 
-    for(i=n; !prime(i); i--) {}
+    FOR(i,0,n) {
+        S(t);
+        pos[t-1] = i;
+    }
 
-    if(i==n) {
-        cout << 1 << endl << n << endl;
-    } else if(prime(n-i)) {
-        cout << 2 << endl << i << " " << n-i << endl;
-    } else {
-        FOR(j,2,150) {
-            if(prime(j) && prime(n-i-j)) {
-                cout << 3 << endl;
-                cout << i << " " << j << " " << n-i-j  << endl;
-                break;
+    FOR(i,0,n) {
+        S(t);
+        int p = pos[t-1];
+        target[p] = i;
+    }
+
+    bool done;
+    do {
+        int last_f;
+
+        done = true;
+
+        FOR(i,0,n) {
+            if(target[i] > i) last_f = i; // going right
+            else if(target[i] < i) { // going left
+                a[0][ans] = i+1;
+                a[1][ans++] = last_f+1;
+                sum += i-last_f;
+                done = false;
+                SWAP(target[i], target[last_f]);
+                if(target[i] == i) break;
+                else last_f = i; // continue moving this right
             }
         }
-    }
+    } while(!done);
+
+    printf("%d\n%d\n", sum, ans);
+    FOR(i,0,ans) printf("%d %d\n", a[0][i], a[1][i]);
 
     return 0;
 }

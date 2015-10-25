@@ -9,28 +9,59 @@ using namespace std;
 #define FOR(i,a,b) for(__typeof(b) i=a; i<b; ++i)
 #define FORE(i,a,b) for(__typeof(b) i=a; i<=b; ++i)
 #define S(x) scanf("%d", &(x))
+#define MAX(a,b) ((a)<(b) ? (b) : (a))
+#define SWAP(a,b) {a ^= b; b ^= a; a ^= b; }
 
 typedef long long LL;
 
-#define MAX(a,b) ((a)<(b) ? (b) : (a))
-
 int main() {
-    int n, p[1001];
-    vector<int> q;
+    int n;
 
     S(n);
 
-    FORE(i,1,n) p[i] = 1;
-    FORE(i,2,n) { // Prime sieve
-        if(!p[i]) continue;
-        for(int j=i+i; j<=n; j+=i) p[j] = 0;
+    vector<int> p(n);
+
+    FOR(i,0,n) cin >> p[i], p[i]--;
+
+    map<int,vector<int>> start;
+    vector<bool> done(n);
+    bool odds=false;
+
+    // Find cycles and mark done
+    FOR(i,0,n) {
+        if(done[i]) continue;
+        int j=i, len=0;
+        do {
+            done[j] = true;
+            len++;
+            j = p[j];
+        } while(j != i);
+        if(len>2 && (len&1)) odds = true;
+        start[len].push_back(i);
+    }
+    
+    if(start.count(1)) {
+        int center = start[1][0];
+        cout << "YES" << endl;
+        FOR(i,0,n) if(i != center) cout << center+1 << " " << i+1 << endl;
+    } else if(start.count(2) && !odds) {
+        int left = start[2][0], right = p[left];
+        cout << "YES" << endl;
+        cout << left+1 << " " << right+1 << endl;
+        // Connect cycles with left, right and clear done
+        FOR(i,0,n) {
+            if(!done[i] || i==left || i==right) continue; // processed
+            int j=i;
+            do {
+                cout << left+1 << " " << j+1 << endl;
+                SWAP(left, right);
+                j = p[j];
+                done[j] = false;
+            } while(j != i);
+        }
+    } else {
+        cout << "NO" << endl;
     }
 
-    FORE(i,2,n)
-        if(p[i])
-            for(int m=i; m<=n; m*=i) q.push_back(m);
-
-    cout << q.size() << endl;
-    for(int v : q) cout << v << " ";
     return 0;
 }

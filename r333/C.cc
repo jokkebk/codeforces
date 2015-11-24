@@ -45,14 +45,10 @@ int main() {
 
     int skip=rr.count(make_pair(0,n-1));
 
-    //if(skip) cout << "Roads" << endl;
-    //else cout << "Railroads" << endl;
-
     vector<vector<int>> to(n);
     FOR(i,0,n) {
         FOR(j,i+1,n) {
             if(rr.count(make_pair(i,j))==skip) continue;
-            //cout << "From " << i << " to " << j << endl;
             to[i].push_back(j);
             to[j].push_back(i);
         }
@@ -66,15 +62,11 @@ int main() {
         int i = q.front().fi, len = q.front().se; q.pop_front();
         if(seen.count(i)) continue; // were here earlier
         seen.insert(i); // remember
-        //cout << "Now at " << i << ", len " << len << endl;
         if(i == n-1) {
             cout << len << endl;
             return 0;
         }
-        for(int t : to[i]) {
-            //cout << "Go to " << t << endl;
-            q.push_back(make_pair(t, len+1));
-        }
+        for(int t : to[i]) q.push_back(make_pair(t, len+1));
     }
 
     cout << -1 << endl;

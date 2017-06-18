@@ -1,5 +1,6 @@
 #include <iostream>
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -9,22 +10,49 @@ int main() {
     ios_base::sync_with_stdio(false);
     cin.tie(NULL);
 
-    vector<int> ok(N+2);
-    int n, k, q, l, r;
+    int n, m;
 
-    cin >> n >> k >> q;
+    cin >> n >> m;
 
-    while(n--) {
-        cin >> l >> r;
-        ok[l]++; ok[r+1]--;
+    bool inv = n > m;
+    
+    if(inv) swap(n,m);
+
+    vector< vector<int> > g(n, vector<int>(m, 0));
+
+    for(int i=0; i<(inv?m:n); i++) for(int j=0; j<(inv?n:m); j++) cin >> g[inv?j:i][inv?i:j];
+
+    vector<int> csum(m), ans;
+
+    for(int j=0; j<m; j++) for(int i=0; i<n; i++) csum[j] += g[i][j];
+
+    int sm = *min_element(csum.begin(), csum.end());
+    for(int j=0; j<m; j++) {
+        while(csum[j] > sm) {
+            ans.push_back(j+1);
+            for(int i=0; i<n; i++) g[i][j]--;
+            csum[j] -= n;
+        }
+
+        if(csum[j] < sm) {
+            cout << -1 << endl;
+            return 0;
+        }
     }
 
-    for(int i=1; i<=N; i++) ok[i] += ok[i-1]; // Cumulative ranges
-    for(int i=1; i<=N; i++) ok[i] = ok[i]>=k; // Mark OKs with one
-    for(int i=1; i<=N; i++) ok[i] += ok[i-1]; // Cumulative OKs
-
-    while(q--) {
-        cin >> l >> r;
-        cout << ok[r]-ok[l-1] << endl;
+    for(int i=0; i<n; i++) {
+        for(int j=1; j<m; j++) {
+            if(g[i][j] != g[i][0]) {
+                cout << -1 << endl;
+                return 0;
+            }
+        }
     }
+
+    int ops = ans.size();
+    for(int i=0; i<n; i++) ops += g[i][0];
+
+    cout << ops << endl;
+    for(int i : ans) cout << ((inv) ? "row " : "col ") << i << endl;
+    for(int i=0; i<n; i++) while(g[i][0]--) cout << ((inv) ? "col " : "row ") << (i+1) << endl;
 }

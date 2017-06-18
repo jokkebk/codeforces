@@ -14,18 +14,13 @@ int main() {
 
     cin >> n >> m;
 
-    vector< vector<int> > g(n, vector<int>(m, 0));
-
-    for(int i=0; i<n; i++) for(int j=0; j<m; j++) cin >> g[i][j];
-
     bool inv = n > m;
     
-    if(inv) {
-        vector< vector<int> > g2(m, vector<int>(n, 0));
-        for(int i=0; i<n; i++) for(int j=0; j<m; j++) g2[j][i] = g[i][j];
-        swap(n,m);
-        g = g2;
-    }
+    if(inv) swap(n,m);
+
+    vector< vector<int> > g(n, vector<int>(m, 0));
+
+    for(int i=0; i<(inv?m:n); i++) for(int j=0; j<(inv?n:m); j++) cin >> g[inv?j:i][inv?i:j];
 
     vector<int> csum(m), ans;
 

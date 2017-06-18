@@ -4,5 +4,4 @@ p = lambda s: s == s[::-1]
 
 h, m = (int(v) for v in input().split(':'))
 
-print(next(i for i in range(999) if p(s(*a(h,m,i)))))
-
+print(next(i for i in range(440) if p(s(*a(h,m,i)))))

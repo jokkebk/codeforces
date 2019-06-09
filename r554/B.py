@@ -4,7 +4,7 @@ ns = []
 for i in range(40):
     b = format(x, 'b') # reverse
     n = len(b) - b.find('0')
-    #print(b, n)
+
     if n > len(b): # longcat
         print(i)
         if i: print(' '.join(ns))

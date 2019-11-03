@@ -1,6 +1,3 @@
 from math import gcd
-
-t = int(input())
-for _ in range(t):
-    a, b = map(int, input().split())
-    print('Infinite' if gcd(a,b)>1 else 'Finite')
+for _ in range(int(input())):
+    print('Infinite' if gcd(*map(int, input().split()))>1 else 'Finite')

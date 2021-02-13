@@ -1,0 +1,6 @@
+n, k = map(int, input().split())
+a = input().strip()
+mk = ''.join(str(max(c for c in a[i::k])) for i in range(k))
+pat = str(int(a[:k]) + (1 if a[:k]<mk else 0))
+print(n)
+print(''.join(pat[i%k] for i in range(n)))

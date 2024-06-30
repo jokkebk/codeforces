@@ -16,10 +16,8 @@ for i in range(len(fib)-1):
     ab.append(extended_euclidean(fib[i], fib[i+1]))
     a, b = ab[-1]
     x, y = fib[i], fib[i+1]
-    #print(f'{a} * {x} + {b} * {y} = {a*x + b*y}')
 
 for _ in range(int(input())):
-#while True:
     n, k = map(int, input().split())
 
     if n == 0: print(1)
@@ -30,18 +28,11 @@ for _ in range(int(input())):
         # Multiply a and b by n
         a, b = a * n, b * n
 
-        print(f'{a} * {x} + {b} * {y} = {a*x + b*y}')
+        # Make a positive but small as possible
+        a2 = a % y
+        b2 = b - (a2 - a) // y * x
+        a, b = a2, b2
+        #print(f'{a} * {x} + {b} * {y} = {a*x + b*y}')
 
-        if a < 0: # Need to make a positive
-            a2 = a % y
-            b2 = b - (a2 - a) // y * x
-            a, b = a2, b2
-            print(f'{a} * {x} + {b} * {y} = {a*x + b*y}')
-
-        if a > b: # Need to make a smaller than b
-            steps = (a - b) // (x + y) + (1 if (a - b) % (x + y) else 0)
-            a -= steps * y
-            b += steps * x
-            print(f'{a} * {x} + {b} * {y} = {a*x + b*y}')
-
-        print(0 if a < 0 or b < 0 else (b - a) // (x + y) + 1)
+        if a < 0 or b < 0: print(0)
+        else: print((b - a) // (x + y) + 1)

@@ -1,8 +1,17 @@
+import sys
 from collections import Counter
 
-for _ in range(int(input())):
-    input()
-    a = list(map(int, input().split()))
+input = sys.stdin.read
+data = input().split()
+index = 0
+
+t = int(data[index])
+index += 1
+
+for _ in range(t):
+    index += 1  # skip the empty line
+    a = list(map(int, data[index:index + int(data[index - 1])]))
+    index += len(a)
     C = Counter(a)
     d = len(a) - 2
     for n in range(1, 10**7):

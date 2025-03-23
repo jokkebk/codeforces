@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Points Collection Visualization</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    /* Fade-in animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 p-6">
+  <div class="container mx-auto">
+    <div class="flex justify-between items-center mb-4">
+      <h1 class="text-2xl font-bold">Points Collection Visualization</h1>
+      <button id="randomizeButton" class="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded transition duration-300">
+        Randomize New
+      </button>
+    </div>
+    <!-- History container: Each row represents a state (step) -->
+    <div id="history" class="space-y-4"></div>
+  </div>
+
+  <script>
+    // Global state: history of steps and index of current (active) step.
+    let history = [];
+    let currentStep = 0;
+
+    // Generate a random array of 20 numbers in the range [-99, 99] excluding 0.
+    function generateRandomArray() {
+      const arr = [];
+      while(arr.length < 20) {
+        const num = Math.floor(Math.random() * 199) - 99; // yields -99 to 99
+        if(num !== 0) {
+          // Add original position tracking to each number
+          arr.push({
+            value: num,
+            originalIndex: arr.length
+          });
+        }
+      }
+      return arr;
+    }
+
+    // Render a single state row.
+    // 'state' has properties: array (current numbers) and coins (total points so far)
+    // 'index' is the step number.
+    function renderState(state, index) {
+      // Create a container for the row.
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'flex items-center space-x-4 p-4 bg-white rounded shadow cursor-pointer transition transform hover:scale-105';
+      
+      // If this is the most-recent state, add a fade-in animation.
+      if(index === history.length - 1) {
+        rowDiv.classList.add('fade-in');
+      }
+
+      // Highlight active state
+      if(index === currentStep) {
+        rowDiv.classList.add('ring-2', 'ring-blue-500');
+      }
+
+      // Header with step number and coins total.
+      const header = document.createElement('div');
+      header.className = 'min-w-[120px] font-bold';
+      header.textContent = `Step ${index} - Coins: ${state.coins}`;
+      rowDiv.appendChild(header);
+
+      // Container for the list items.
+      const itemsDiv = document.createElement('div');
+      itemsDiv.className = 'flex';
+      
+      // Create a 20-slot array with placeholders for deleted items
+      const displayItems = new Array(20).fill(null);
+      
+      // Place active items in their original positions
+      state.array.forEach(item => {
+        displayItems[item.originalIndex] = item;
+      });
+      
+      // Render all positions (including placeholders)
+      displayItems.forEach((item, i) => {
+        const itemContainer = document.createElement('div');
+        itemContainer.className = 'w-12 h-12 flex items-center justify-center mx-1';
+        
+        if (item === null) {
+          // This is a deleted item - render an empty placeholder
+          const placeholder = document.createElement('div');
+          placeholder.className = 'w-12 h-12 flex items-center justify-center opacity-30 border border-dashed border-gray-400 rounded-full bg-gray-100';
+          
+          // Add an X mark inside the placeholder
+          const xMark = document.createElement('span');
+          xMark.className = 'text-gray-500 text-xl font-light';
+          xMark.textContent = '×';
+          
+          placeholder.appendChild(xMark);
+          itemContainer.appendChild(placeholder);
+        } else {
+          // This is an active item
+          const itemElement = document.createElement('div');
+          itemElement.className = 'w-12 h-12 flex items-center justify-center rounded-full border border-gray-300 font-bold';
+          
+          // Style based on positive/negative.
+          if(item.value > 0) {
+            itemElement.classList.add('bg-green-200', 'text-green-800');
+          } else {
+            itemElement.classList.add('bg-red-200', 'text-red-800');
+          }
+          itemElement.textContent = item.value;
+
+          // Highlight the item that was selected in this step
+          if(state.selectedIndex === i) {
+            itemElement.classList.add('highlighted-item', 'ring-4', 'ring-blue-600');
+          }
+
+          // Make items clickable in all steps
+          itemElement.classList.add('cursor-pointer', 'hover:shadow-lg', 'transition');
+          itemElement.addEventListener('click', function(e) {
+            e.stopPropagation();
+            
+            // Find the actual index in the current array (not the display index)
+            const actualIndex = state.array.findIndex(arrItem => arrItem.originalIndex === i);
+            
+            if(index === currentStep) {
+              // Clear previous highlights in current step only
+              const stepItems = rowDiv.querySelectorAll('.highlighted-item');
+              stepItems.forEach(el => el.classList.remove('highlighted-item', 'ring-4', 'ring-blue-600'));
+              
+              // Highlight this item
+              itemElement.classList.add('highlighted-item', 'ring-4', 'ring-blue-600');
+              
+              // Update the current state to store which item was selected
+              state.selectedIndex = i;
+              
+              // Use setTimeout to add a small delay so the highlight is visible before the next state
+              setTimeout(() => handleItemClick(actualIndex), 200);
+            } else {
+              // Handle clicking on an item in a previous step
+              // First update the selected item in that step
+              history[index].selectedIndex = i;
+              
+              // Then truncate history and generate new steps
+              currentStep = index;
+              history = history.slice(0, index + 1);
+              
+              // Re-render the history with the updated selection
+              renderHistory();
+              
+              // Then process the selected item
+              setTimeout(() => handleItemClick(actualIndex), 200);
+            }
+          });
+          
+          itemContainer.appendChild(itemElement);
+        }
+        
+        itemsDiv.appendChild(itemContainer);
+      });
+      
+      rowDiv.appendChild(itemsDiv);
+
+      // Allow clicking on an older row itself (not the items) to just revert without selecting
+      if(index !== currentStep) {
+        rowDiv.addEventListener('click', function(e) {
+          // Only handle clicks on the row itself, not on items
+          if(e.target === rowDiv || e.target === header) {
+            // Revert: set current step and remove later steps
+            currentStep = index;
+            history = history.slice(0, index + 1);
+            renderHistory();
+          }
+        });
+      }
+      return rowDiv;
+    }
+
+    // Render the entire history.
+    function renderHistory() {
+      const historyDiv = document.getElementById('history');
+      historyDiv.innerHTML = '';
+      history.forEach((state, index) => {
+        const row = renderState(state, index);
+        historyDiv.appendChild(row);
+      });
+    }
+
+    // Handle click on an item in the current (active) state.
+    function handleItemClick(index) {
+      const currentState = history[currentStep];
+      const chosen = currentState.array[index];
+      const newCoins = currentState.coins + Math.abs(chosen.value);
+      let newArray = [];
+      
+      // If the chosen number is positive, remove the prefix (including the clicked item).
+      // If negative, remove the suffix (including the clicked item).
+      if(chosen.value > 0) {
+        newArray = currentState.array.slice(index + 1);
+      } else {
+        newArray = currentState.array.slice(0, index);
+      }
+      
+      const newState = { 
+        array: newArray, 
+        coins: newCoins, 
+        selectedIndex: null 
+      };
+      
+      history.push(newState);
+      currentStep++;
+      renderHistory();
+    }
+
+    // Randomize a new starting state.
+    function randomize() {
+      history = [];
+      currentStep = 0;
+      const arr = generateRandomArray();
+      history.push({ array: arr, coins: 0, selectedIndex: null });
+      renderHistory();
+    }
+
+    // Attach event listener to the Randomize New button.
+    document.getElementById('randomizeButton').addEventListener('click', randomize);
+
+    // Initialize with a random state.
+    randomize();
+  </script>
+</body>
+</html>
